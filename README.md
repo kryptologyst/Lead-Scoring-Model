@@ -212,7 +212,7 @@ The system includes a sophisticated mock database that generates realistic lead 
 - **Behavioral Patterns**: Realistic engagement distributions
 - **Temporal Factors**: Time-based conversion patterns
 
-## 🧪 Testing
+## Testing
 
 ### Manual Testing
 1. Start the application
@@ -310,6 +310,3 @@ This project demonstrates:
 - **Data Science**: Data generation, analysis, visualization
 - **Software Engineering**: Project structure, documentation, version control
 - **Business Intelligence**: Lead scoring, conversion optimization, analytics
-
-
-# Lead-Scoring-Model
