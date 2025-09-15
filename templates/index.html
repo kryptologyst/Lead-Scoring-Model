@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Lead Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>Lead Scoring Dashboard
+        </h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_leads }}</h4>
+                        <p class="mb-0">Total Leads</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.converted_leads }}</h4>
+                        <p class="mb-0">Converted</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ "%.1f"|format(stats.conversion_rate * 100) }}%</h4>
+                        <p class="mb-0">Conversion Rate</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-percentage fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ "%.0f"|format(stats.avg_lead_score) }}</h4>
+                        <p class="mb-0">Avg Score</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-star fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-rocket me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('score_lead') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Score New Lead
+                            </a>
+                        </div>
+                        <small class="text-muted">Add and score a new lead using our ML model</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('view_leads') }}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-list me-2"></i>View All Leads
+                            </a>
+                        </div>
+                        <small class="text-muted">Browse and manage existing leads</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('analytics') }}" class="btn btn-outline-success btn-lg">
+                                <i class="fas fa-chart-bar me-2"></i>View Analytics
+                            </a>
+                        </div>
+                        <small class="text-muted">Analyze model performance and insights</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-grid">
+                            <a href="{{ url_for('export_data') }}" class="btn btn-outline-info btn-lg">
+                                <i class="fas fa-download me-2"></i>Export Data
+                            </a>
+                        </div>
+                        <small class="text-muted">Download leads data as CSV</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Model Status
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if model_trained %}
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Model Ready!</strong><br>
+                        The ML model is trained and ready to score leads.
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Model Not Trained</strong><br>
+                        The model will be trained automatically when you score your first lead.
+                    </div>
+                {% endif %}
+                
+                <h6 class="mt-3">Lead Score Categories:</h6>
+                <ul class="list-unstyled">
+                    <li><span class="score-hot">Hot (80-100):</span> High conversion probability</li>
+                    <li><span class="score-warm">Warm (60-79):</span> Good conversion potential</li>
+                    <li><span class="score-cold">Cold (40-59):</span> Moderate interest</li>
+                    <li><span class="score-ice-cold">Ice Cold (0-39):</span> Low conversion likelihood</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>About This System
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>This Lead Scoring System uses machine learning to predict the likelihood of lead conversion based on various factors including:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li><strong>Demographics:</strong> Age, Industry, Company Size</li>
+                            <li><strong>Lead Source:</strong> How the lead was acquired</li>
+                            <li><strong>Engagement:</strong> Page views, time on site</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul>
+                            <li><strong>Email Activity:</strong> Opens and clicks</li>
+                            <li><strong>Content Interaction:</strong> Downloads and form submissions</li>
+                            <li><strong>Timing:</strong> Days since first contact</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="mb-0">The system continuously learns from new data to improve prediction accuracy over time.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

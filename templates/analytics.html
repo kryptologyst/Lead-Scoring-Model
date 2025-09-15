@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Lead Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-chart-bar me-2"></i>Analytics Dashboard
+            </h1>
+            <form method="POST" action="{{ url_for('retrain_model') }}" style="display: inline;">
+                <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to retrain the model? This may take a few minutes.')">
+                    <i class="fas fa-sync-alt me-2"></i>Retrain Model
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if metrics %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ "%.3f"|format(metrics.accuracy) }}</h4>
+                        <p class="mb-0">Model Accuracy</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-bullseye fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ "%.3f"|format(metrics.roc_auc) }}</h4>
+                        <p class="mb-0">ROC AUC Score</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-area fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ metrics.training_samples }}</h4>
+                        <p class="mb-0">Training Samples</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ metrics.test_samples }}</h4>
+                        <p class="mb-0">Test Samples</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-vial fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Model Performance</h5>
+            </div>
+            <div class="card-body">
+                <h6>Classification Report</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1-Score</th>
+                                <th>Support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Not Converted</td>
+                                <td>{{ "%.3f"|format(metrics.classification_report['0']['precision']) }}</td>
+                                <td>{{ "%.3f"|format(metrics.classification_report['0']['recall']) }}</td>
+                                <td>{{ "%.3f"|format(metrics.classification_report['0']['f1-score']) }}</td>
+                                <td>{{ metrics.classification_report['0']['support'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>Converted</td>
+                                <td>{{ "%.3f"|format(metrics.classification_report['1']['precision']) }}</td>
+                                <td>{{ "%.3f"|format(metrics.classification_report['1']['recall']) }}</td>
+                                <td>{{ "%.3f"|format(metrics.classification_report['1']['f1-score']) }}</td>
+                                <td>{{ metrics.classification_report['1']['support'] }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if metrics.cv_mean %}
+                <div class="mt-3">
+                    <h6>Cross-Validation Results</h6>
+                    <p>Mean AUC: <strong>{{ "%.3f"|format(metrics.cv_mean) }}</strong> (±{{ "%.3f"|format(metrics.cv_std * 2) }})</p>
+                </div>
+                {% endif %}
+                
+                <small class="text-muted">
+                    Model trained on: {{ metrics.training_date[:10] if metrics.training_date else 'Unknown' }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Lead Score Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if score_distribution %}
+                <canvas id="scoreDistributionChart" width="400" height="200"></canvas>
+                {% else %}
+                <p class="text-muted">No lead score data available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if feature_importance %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Feature Importance</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="featureImportanceChart" width="400" height="300"></canvas>
+                
+                <div class="mt-4">
+                    <h6>Top Features Explanation:</h6>
+                    <div class="row">
+                        {% for feature in feature_importance[:6] %}
+                        <div class="col-md-4 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-truncate">{{ feature.feature }}</span>
+                                <span class="badge bg-primary">{{ "%.3f"|format(feature.importance) }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Confusion Matrix</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="confusionMatrixChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Model Insights</h5>
+            </div>
+            <div class="card-body">
+                <h6>Key Insights:</h6>
+                <ul>
+                    {% if metrics.accuracy >= 0.8 %}
+                    <li class="text-success">Excellent model accuracy ({{ "%.1f"|format(metrics.accuracy * 100) }}%)</li>
+                    {% elif metrics.accuracy >= 0.7 %}
+                    <li class="text-warning">Good model accuracy ({{ "%.1f"|format(metrics.accuracy * 100) }}%)</li>
+                    {% else %}
+                    <li class="text-danger">Model accuracy could be improved ({{ "%.1f"|format(metrics.accuracy * 100) }}%)</li>
+                    {% endif %}
+                    
+                    {% if metrics.roc_auc >= 0.8 %}
+                    <li class="text-success">Strong predictive power (AUC: {{ "%.3f"|format(metrics.roc_auc) }})</li>
+                    {% elif metrics.roc_auc >= 0.7 %}
+                    <li class="text-warning">Moderate predictive power (AUC: {{ "%.3f"|format(metrics.roc_auc) }})</li>
+                    {% else %}
+                    <li class="text-danger">Weak predictive power (AUC: {{ "%.3f"|format(metrics.roc_auc) }})</li>
+                    {% endif %}
+                    
+                    <li>Model trained on {{ metrics.training_samples }} samples</li>
+                    <li>Tested on {{ metrics.test_samples }} samples</li>
+                </ul>
+                
+                <h6 class="mt-3">Recommendations:</h6>
+                <ul>
+                    {% if metrics.training_samples < 500 %}
+                    <li>Consider collecting more training data for better performance</li>
+                    {% endif %}
+                    {% if metrics.accuracy < 0.8 %}
+                    <li>Try feature engineering or different algorithms</li>
+                    {% endif %}
+                    <li>Regularly retrain the model with new data</li>
+                    <li>Monitor model performance over time</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Model Not Trained</strong><br>
+            The model hasn't been trained yet. Please score a lead first to train the model and view analytics.
+        </div>
+        <div class="text-center">
+            <a href="{{ url_for('score_lead') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Score Your First Lead
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if metrics %}
+<script>
+// Score Distribution Chart
+{% if score_distribution %}
+const scoreCtx = document.getElementById('scoreDistributionChart').getContext('2d');
+new Chart(scoreCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ score_distribution.keys() | list | tojson }},
+        datasets: [{
+            data: {{ score_distribution.values() | list | tojson }},
+            backgroundColor: [
+                '#dc3545', // Hot - Red
+                '#fd7e14', // Warm - Orange  
+                '#0dcaf0', // Cold - Cyan
+                '#6c757d'  // Ice Cold - Gray
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+{% endif %}
+
+// Feature Importance Chart
+{% if feature_importance %}
+const featureCtx = document.getElementById('featureImportanceChart').getContext('2d');
+new Chart(featureCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ feature_importance | map(attribute='feature') | list | tojson }},
+        datasets: [{
+            label: 'Importance',
+            data: {{ feature_importance | map(attribute='importance') | list | tojson }},
+            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: {
+            x: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+{% endif %}
+
+// Confusion Matrix Chart
+const confusionCtx = document.getElementById('confusionMatrixChart').getContext('2d');
+const confusionMatrix = {{ metrics.confusion_matrix | tojson }};
+
+new Chart(confusionCtx, {
+    type: 'bar',
+    data: {
+        labels: ['True Negative', 'False Positive', 'False Negative', 'True Positive'],
+        datasets: [{
+            label: 'Count',
+            data: [
+                confusionMatrix[0][0], // TN
+                confusionMatrix[0][1], // FP
+                confusionMatrix[1][0], // FN
+                confusionMatrix[1][1]  // TP
+            ],
+            backgroundColor: [
+                'rgba(40, 167, 69, 0.8)',   // TN - Green
+                'rgba(220, 53, 69, 0.8)',   // FP - Red
+                'rgba(255, 193, 7, 0.8)',   // FN - Yellow
+                'rgba(40, 167, 69, 0.8)'    // TP - Green
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

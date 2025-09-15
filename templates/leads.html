@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}View Leads - Lead Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-users me-2"></i>All Leads
+            </h1>
+            <div>
+                <a href="{{ url_for('score_lead') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add New Lead
+                </a>
+                <a href="{{ url_for('export_data') }}" class="btn btn-outline-success">
+                    <i class="fas fa-download me-2"></i>Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if leads %}
+                <div class="table-responsive">
+                    <table class="table table-hover" id="leadsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Lead ID</th>
+                                <th>Score</th>
+                                <th>Category</th>
+                                <th>Source</th>
+                                <th>Industry</th>
+                                <th>Company Size</th>
+                                <th>Age</th>
+                                <th>Engagement</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in leads %}
+                            <tr>
+                                <td><strong>{{ lead.lead_id }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{% if lead.lead_score >= 80 %}danger{% elif lead.lead_score >= 60 %}warning{% elif lead.lead_score >= 40 %}info{% else %}secondary{% endif %} fs-6">
+                                        {{ lead.lead_score }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="score-{% if lead.lead_score >= 80 %}hot{% elif lead.lead_score >= 60 %}warm{% elif lead.lead_score >= 40 %}cold{% else %}ice-cold{% endif %}">
+                                        {% if lead.lead_score >= 80 %}Hot
+                                        {% elif lead.lead_score >= 60 %}Warm
+                                        {% elif lead.lead_score >= 40 %}Cold
+                                        {% else %}Ice Cold
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>{{ lead.lead_source }}</td>
+                                <td>{{ lead.industry }}</td>
+                                <td>{{ lead.company_size }}</td>
+                                <td>{{ lead.age }}</td>
+                                <td>
+                                    <small>
+                                        <i class="fas fa-eye me-1"></i>{{ lead.page_views }}
+                                        <i class="fas fa-clock ms-2 me-1"></i>{{ lead.time_on_site }}s
+                                        <i class="fas fa-envelope ms-2 me-1"></i>{{ lead.email_opens }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if lead.converted == 1 %}
+                                        <span class="badge bg-success">Converted</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ lead.created_at.strftime('%Y-%m-%d') if lead.created_at else 'N/A' }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h4>No Leads Found</h4>
+                    <p class="text-muted">Start by scoring your first lead to see data here.</p>
+                    <a href="{{ url_for('score_lead') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Score First Lead
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if leads %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title text-danger">Hot Leads</h5>
+                <h2 class="text-danger">{{ leads | selectattr('lead_score', 'ge', 80) | list | length }}</h2>
+                <p class="card-text">Score 80-100</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title text-warning">Warm Leads</h5>
+                <h2 class="text-warning">{{ leads | selectattr('lead_score', 'ge', 60) | selectattr('lead_score', 'lt', 80) | list | length }}</h2>
+                <p class="card-text">Score 60-79</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title text-info">Cold Leads</h5>
+                <h2 class="text-info">{{ leads | selectattr('lead_score', 'lt', 60) | list | length }}</h2>
+                <p class="card-text">Score 0-59</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add search functionality
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'form-control mb-3';
+    searchInput.placeholder = 'Search leads...';
+    
+    const table = document.getElementById('leadsTable');
+    if (table) {
+        table.parentNode.insertBefore(searchInput, table);
+        
+        searchInput.addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

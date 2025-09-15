@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Score Lead - Lead Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-user-plus me-2"></i>Score New Lead
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Lead Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="lead_source" class="form-label">Lead Source *</label>
+                                <select class="form-select" id="lead_source" name="lead_source" required>
+                                    <option value="">Select lead source...</option>
+                                    <option value="Email">Email</option>
+                                    <option value="Website">Website</option>
+                                    <option value="Social Media">Social Media</option>
+                                    <option value="Referral">Referral</option>
+                                    <option value="Paid Ad">Paid Ad</option>
+                                    <option value="Webinar">Webinar</option>
+                                    <option value="Trade Show">Trade Show</option>
+                                    <option value="Cold Call">Cold Call</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="industry" class="form-label">Industry *</label>
+                                <select class="form-select" id="industry" name="industry" required>
+                                    <option value="">Select industry...</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Retail">Retail</option>
+                                    <option value="Manufacturing">Manufacturing</option>
+                                    <option value="Real Estate">Real Estate</option>
+                                    <option value="Consulting">Consulting</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="company_size" class="form-label">Company Size *</label>
+                                <select class="form-select" id="company_size" name="company_size" required>
+                                    <option value="">Select company size...</option>
+                                    <option value="Startup (1-10)">Startup (1-10)</option>
+                                    <option value="Small (11-50)">Small (11-50)</option>
+                                    <option value="Medium (51-200)">Medium (51-200)</option>
+                                    <option value="Large (201-1000)">Large (201-1000)</option>
+                                    <option value="Enterprise (1000+)">Enterprise (1000+)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="age" class="form-label">Contact Age *</label>
+                                <input type="number" class="form-control" id="age" name="age" min="18" max="80" required>
+                                <div class="form-text">Age of the primary contact person</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Website Engagement</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="page_views" class="form-label">Page Views *</label>
+                                <input type="number" class="form-control" id="page_views" name="page_views" min="0" required>
+                                <div class="form-text">Number of pages viewed on website</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="time_on_site" class="form-label">Time on Site (seconds) *</label>
+                                <input type="number" class="form-control" id="time_on_site" name="time_on_site" min="0" required>
+                                <div class="form-text">Total time spent on website</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Email Engagement</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email_opens" class="form-label">Email Opens *</label>
+                                <input type="number" class="form-control" id="email_opens" name="email_opens" min="0" required>
+                                <div class="form-text">Number of emails opened</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email_clicks" class="form-label">Email Clicks *</label>
+                                <input type="number" class="form-control" id="email_clicks" name="email_clicks" min="0" required>
+                                <div class="form-text">Number of email links clicked</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Content Interaction</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="form_submissions" class="form-label">Form Submissions *</label>
+                                <input type="number" class="form-control" id="form_submissions" name="form_submissions" min="0" required>
+                                <div class="form-text">Number of forms submitted</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="content_downloads" class="form-label">Content Downloads *</label>
+                                <input type="number" class="form-control" id="content_downloads" name="content_downloads" min="0" required>
+                                <div class="form-text">Number of content pieces downloaded</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="days_since_contact" class="form-label">Days Since First Contact *</label>
+                                <input type="number" class="form-control" id="days_since_contact" name="days_since_contact" min="1" required>
+                                <div class="form-text">Number of days since initial contact</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-calculator me-2"></i>Calculate Lead Score
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Scoring Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>High-Value Indicators:</h6>
+                <ul class="small">
+                    <li>Multiple page views (10+)</li>
+                    <li>Long time on site (600+ seconds)</li>
+                    <li>High email engagement</li>
+                    <li>Form submissions and downloads</li>
+                    <li>Referral lead sources</li>
+                    <li>Enterprise company size</li>
+                </ul>
+                
+                <h6 class="mt-3">Lead Sources by Quality:</h6>
+                <ul class="small">
+                    <li><strong>Best:</strong> Referral, Webinar</li>
+                    <li><strong>Good:</strong> Trade Show, Paid Ad</li>
+                    <li><strong>Average:</strong> Email, Social Media</li>
+                    <li><strong>Lower:</strong> Website, Cold Call</li>
+                </ul>
+                
+                <div class="alert alert-info mt-3" role="alert">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        The model considers all factors together to provide an accurate score.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add some client-side validation and UX improvements
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-calculate reasonable defaults based on other inputs
+    const leadSourceSelect = document.getElementById('lead_source');
+    const pageViewsInput = document.getElementById('page_views');
+    const timeOnSiteInput = document.getElementById('time_on_site');
+    
+    leadSourceSelect.addEventListener('change', function() {
+        const source = this.value;
+        let suggestedPageViews = 1;
+        let suggestedTimeOnSite = 120;
+        
+        switch(source) {
+            case 'Website':
+                suggestedPageViews = 3;
+                suggestedTimeOnSite = 300;
+                break;
+            case 'Referral':
+                suggestedPageViews = 8;
+                suggestedTimeOnSite = 800;
+                break;
+            case 'Webinar':
+                suggestedPageViews = 12;
+                suggestedTimeOnSite = 1200;
+                break;
+            case 'Paid Ad':
+                suggestedPageViews = 5;
+                suggestedTimeOnSite = 400;
+                break;
+        }
+        
+        if (!pageViewsInput.value) {
+            pageViewsInput.value = suggestedPageViews;
+        }
+        if (!timeOnSiteInput.value) {
+            timeOnSiteInput.value = suggestedTimeOnSite;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Lead Score Result - Lead Scoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-chart-line me-2"></i>Lead Score Result
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>Lead Scored Successfully
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <div class="display-1 mb-2">
+                                <span class="score-{{ result.score_category.lower().replace(' ', '-') }}">
+                                    {{ result.lead_score }}
+                                </span>
+                            </div>
+                            <h4 class="score-{{ result.score_category.lower().replace(' ', '-') }}">
+                                {{ result.score_category }}
+                            </h4>
+                            <p class="text-muted">Lead Score (0-100)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Prediction Details:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Conversion Probability:</strong> {{ "%.1f"|format(result.conversion_probability * 100) }}%</li>
+                            <li><strong>Predicted Outcome:</strong> 
+                                {% if result.predicted_conversion %}
+                                    <span class="text-success">Likely to Convert</span>
+                                {% else %}
+                                    <span class="text-warning">Unlikely to Convert</span>
+                                {% endif %}
+                            </li>
+                            <li><strong>Lead ID:</strong> {{ lead_data.lead_id }}</li>
+                        </ul>
+                        
+                        <div class="progress mt-3">
+                            <div class="progress-bar 
+                                {% if result.lead_score >= 80 %}bg-danger
+                                {% elif result.lead_score >= 60 %}bg-warning
+                                {% elif result.lead_score >= 40 %}bg-info
+                                {% else %}bg-secondary
+                                {% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ result.lead_score }}%" 
+                                aria-valuenow="{{ result.lead_score }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                {{ result.lead_score }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h6>Recommended Actions:</h6>
+                {% if result.score_category == 'Hot' %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-fire me-2"></i>
+                        <strong>High Priority Lead!</strong> Contact immediately. This lead shows strong buying signals and should be prioritized for immediate follow-up.
+                    </div>
+                    <ul>
+                        <li>Schedule a demo or consultation within 24 hours</li>
+                        <li>Assign to your best sales representative</li>
+                        <li>Prepare personalized proposal</li>
+                        <li>Follow up multiple times if needed</li>
+                    </ul>
+                {% elif result.score_category == 'Warm' %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-thermometer-half me-2"></i>
+                        <strong>Good Potential Lead!</strong> This lead shows interest and should be nurtured with targeted content.
+                    </div>
+                    <ul>
+                        <li>Send targeted educational content</li>
+                        <li>Schedule follow-up within 2-3 days</li>
+                        <li>Invite to webinars or events</li>
+                        <li>Continue email nurturing sequence</li>
+                    </ul>
+                {% elif result.score_category == 'Cold' %}
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-snowflake me-2"></i>
+                        <strong>Moderate Interest Lead.</strong> Continue nurturing with valuable content to build engagement.
+                    </div>
+                    <ul>
+                        <li>Add to email nurturing campaign</li>
+                        <li>Share relevant case studies</li>
+                        <li>Monitor for increased engagement</li>
+                        <li>Follow up weekly</li>
+                    </ul>
+                {% else %}
+                    <div class="alert alert-secondary" role="alert">
+                        <i class="fas fa-ice-cream me-2"></i>
+                        <strong>Low Priority Lead.</strong> Focus on other leads but keep this one in long-term nurturing.
+                    </div>
+                    <ul>
+                        <li>Add to long-term nurturing campaign</li>
+                        <li>Send monthly newsletters</li>
+                        <li>Re-evaluate in 3-6 months</li>
+                        <li>Focus resources on higher-scoring leads</li>
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Lead Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Source:</strong></td>
+                        <td>{{ lead_data.lead_source }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Industry:</strong></td>
+                        <td>{{ lead_data.industry }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Company Size:</strong></td>
+                        <td>{{ lead_data.company_size }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Age:</strong></td>
+                        <td>{{ lead_data.age }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Page Views:</strong></td>
+                        <td>{{ lead_data.page_views }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Time on Site:</strong></td>
+                        <td>{{ lead_data.time_on_site }}s</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email Opens:</strong></td>
+                        <td>{{ lead_data.email_opens }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email Clicks:</strong></td>
+                        <td>{{ lead_data.email_clicks }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Form Submissions:</strong></td>
+                        <td>{{ lead_data.form_submissions }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Downloads:</strong></td>
+                        <td>{{ lead_data.content_downloads }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Days Since Contact:</strong></td>
+                        <td>{{ lead_data.days_since_contact }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Next Steps</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('score_lead') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Score Another Lead
+                    </a>
+                    <a href="{{ url_for('view_leads') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>View All Leads
+                    </a>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-outline-success">
+                        <i class="fas fa-chart-bar me-2"></i>View Analytics
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
